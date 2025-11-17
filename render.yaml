@@ -2,7 +2,7 @@ services:
   - type: web
     name: ayurveda-app
     runtime: python3
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput --clear"
     startCommand: "gunicorn ayurveda_project.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
