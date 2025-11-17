@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ recipe.name }} - Recipe Detail{% endblock %}
+
+{% block content %}
+{% load static %}
+<style>
+    .recipe-hero {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 4rem 0;
+        margin-top: -2rem;
+        margin-bottom: 3rem;
+        border-radius: 0 0 50px 50px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .recipe-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .recipe-hero .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .recipe-image-container {
+        position: relative;
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        margin-bottom: 2rem;
+    }
+
+    .recipe-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .recipe-image:hover {
+        transform: scale(1.05);
+    }
+
+    .recipe-image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        display: flex;
+        align-items: flex-end;
+        padding: 2rem;
+    }
+
+    .recipe-title-overlay {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        margin: 0;
+    }
+
+    .recipe-content {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        margin-top: -2rem;
+        position: relative;
+        z-index: 3;
+    }
+
+    .recipe-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 20px;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .meta-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .meta-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .meta-label {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .section-icon {
+        color: var(--vibrant-orange);
+        font-size: 1.8rem;
+        filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3));
+    }
+
+    .recipe-text {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: var(--text-secondary);
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        border-left: 4px solid var(--primary-color);
+        margin-bottom: 2rem;
+    }
+
+    .ingredients-list {
+        background: linear-gradient(135deg, #fef7ed 0%, #fffbeb 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        margin-bottom: 2rem;
+    }
+
+    .ingredients-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .ingredients-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(245, 158, 11, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .ingredients-list li:last-child {
+        border-bottom: none;
+    }
+
+    .ingredients-list li::before {
+        content: '🌿';
+        font-size: 1.2rem;
+    }
+
+    .ayurvedic-properties {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        margin-bottom: 2rem;
+    }
+
+    .dosha-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .dosha-badge {
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .dosha-pacify {
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .dosha-aggravate {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+    }
+
+    .dosha-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .back-button {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-button:hover {
+        background: linear-gradient(135deg, var(--vibrant-purple), var(--vibrant-indigo));
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .no-image {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 400px;
+        border-radius: 25px;
+        color: #6b7280;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .no-image i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        .recipe-hero {
+            padding: 2rem 0;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .recipe-image {
+            height: 250px;
+        }
+
+        .recipe-title-overlay {
+            font-size: 1.8rem;
+        }
+
+        .recipe-content {
+            padding: 2rem;
+            margin-top: -1rem;
+        }
+
+        .recipe-meta {
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .meta-item {
+            flex: 1 1 100%;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+        }
+
+        .recipe-text {
+            padding: 1.5rem;
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<div class="recipe-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">{{ recipe.name }}</h1>
+                <p class="lead mb-0">Discover the nourishing power of Ayurvedic cuisine</p>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-flower1" style="font-size: 4rem; color: rgba(255,255,255,0.3);"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Recipe Image -->
+    <div class="recipe-image-container">
+        {% if recipe.image %}
+            <img src="{{ recipe.image }}" alt="{{ recipe.name }}" class="recipe-image">
+            <div class="recipe-image-overlay">
+                <h1 class="recipe-title-overlay">{{ recipe.name }}</h1>
+            </div>
+        {% else %}
+            {% with forloop.counter as counter %}
+            {% if counter|divisibleby:6 %}
+            <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="recipe-image" alt="{{ recipe.name }}">
+            {% elif counter|divisibleby:5 %}
+            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="recipe-image" alt="{{ recipe.name }}">
+            {% elif counter|divisibleby:4 %}
+            <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="recipe-image" alt="{{ recipe.name }}">
+            {% elif counter|divisibleby:3 %}
+            <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="recipe-image" alt="{{ recipe.name }}">
+            {% elif counter|divisibleby:2 %}
+            <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="recipe-image" alt="{{ recipe.name }}">
+            {% else %}
+            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="recipe-image" alt="{{ recipe.name }}">
+            {% endif %}
+            {% endwith %}
+            <div class="recipe-image-overlay">
+                <h1 class="recipe-title-overlay">{{ recipe.name }}</h1>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recipe Content -->
+    <div class="recipe-content">
+        <!-- Recipe Meta Information -->
+        <div class="recipe-meta">
+            <div class="meta-item">
+                <i class="bi bi-clock meta-icon"></i>
+                <div>
+                    <div class="meta-label">Meal Time</div>
+                    <div class="meta-value">{{ recipe.get_meal_time_display }}</div>
+                </div>
+            </div>
+            <div class="meta-item">
+                <i class="bi bi-cup-hot meta-icon"></i>
+                <div>
+                    <div class="meta-label">Food Type</div>
+                    <div class="meta-value">{{ recipe.get_food_type_display }}</div>
+                </div>
+            </div>
+            {% if recipe.pacifies %}
+            <div class="meta-item">
+                <i class="bi bi-shield-check meta-icon" style="color: #16a34a;"></i>
+                <div>
+                    <div class="meta-label">Pacifies</div>
+                    <div class="meta-value">{{ recipe.pacifies }}</div>
+                </div>
+            </div>
+            {% endif %}
+            {% if recipe.aggravates %}
+            <div class="meta-item">
+                <i class="bi bi-exclamation-triangle meta-icon" style="color: #dc2626;"></i>
+                <div>
+                    <div class="meta-label">Aggravates</div>
+                    <div class="meta-value">{{ recipe.aggravates }}</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recipe Instructions -->
+        <h2 class="section-title">
+            <i class="bi bi-journal-text section-icon"></i>
+            Recipe Instructions
+        </h2>
+        <div class="recipe-text">
+            {{ recipe.recipe_text }}
+        </div>
+
+        <!-- Key Ingredients -->
+        {% if recipe.ingredients %}
+        <h2 class="section-title">
+            <i class="bi bi-flower1 section-icon"></i>
+            Key Ingredients
+        </h2>
+        <div class="ingredients-list">
+            <ul>
+                {% for ingredient in recipe.ingredients|make_list %}
+                <li>{{ ingredient }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Ayurvedic Properties -->
+        <h2 class="section-title">
+            <i class="bi bi-heart-pulse section-icon"></i>
+            Ayurvedic Properties
+        </h2>
+        <div class="ayurvedic-properties">
+            <div class="dosha-badges">
+                {% if recipe.pacifies %}
+                <div class="dosha-badge dosha-pacify">
+                    <i class="bi bi-check-circle"></i>
+                    Pacifies: {{ recipe.pacifies }}
+                </div>
+                {% endif %}
+                {% if recipe.aggravates %}
+                <div class="dosha-badge dosha-aggravate">
+                    <i class="bi bi-x-circle"></i>
+                    Aggravates: {{ recipe.aggravates }}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if recipe.specific_conditions %}
+            <div class="mt-3">
+                <strong style="color: var(--text-primary); font-weight: 700;">Specific Conditions:</strong>
+                <span style="color: var(--text-secondary); font-weight: 500;">{{ recipe.specific_conditions }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Back Button -->
+        <div class="text-center mt-4">
+            <a href="{% url 'nutrition:recipes_list' %}" class="back-button">
+                <i class="bi bi-arrow-left"></i>
+                Back to Recipes
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

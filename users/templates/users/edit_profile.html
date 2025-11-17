@@ -1,0 +1,481 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - AyurMe{% endblock %}
+
+{% block content %}
+<div class="edit-profile-container">
+    <!-- Header -->
+    <div class="edit-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+            <div class="header-text">
+                <h1 class="header-title">Edit Your Profile</h1>
+                <p class="header-subtitle">Update your personal information and health goals</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'profile' %}" class="btn-back">
+                <i class="bi bi-arrow-left me-2"></i>Back to Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="edit-form-section">
+        <div class="form-card">
+            <div class="form-header">
+                <h2 class="form-title">Personal Information</h2>
+                <p class="form-subtitle">Keep your profile up to date for better recommendations</p>
+            </div>
+
+            <form method="post" class="edit-form">
+                {% csrf_token %}
+
+                <div class="form-grid">
+                    <!-- Age -->
+                    <div class="form-group">
+                        <label for="{{ form.age.id_for_label }}" class="form-label">
+                            <i class="bi bi-calendar me-2"></i>Age
+                        </label>
+                        {{ form.age }}
+                        {% if form.age.errors %}
+                            <div class="error-message">
+                                {% for error in form.age.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="form-group">
+                        <label for="{{ form.gender.id_for_label }}" class="form-label">
+                            <i class="bi bi-gender-ambiguous me-2"></i>Gender
+                        </label>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}
+                            <div class="error-message">
+                                {% for error in form.gender.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Location -->
+                    <div class="form-group full-width">
+                        <label for="{{ form.location.id_for_label }}" class="form-label">
+                            <i class="bi bi-geo-alt me-2"></i>Location
+                        </label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div class="error-message">
+                                {% for error in form.location.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Health Goals -->
+                    <div class="form-group full-width">
+                        <label for="{{ form.health_goals.id_for_label }}" class="form-label">
+                            <i class="bi bi-heart me-2"></i>Health Goals
+                        </label>
+                        {{ form.health_goals }}
+                        {% if form.health_goals.errors %}
+                            <div class="error-message">
+                                {% for error in form.health_goals.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-help">Describe your wellness objectives and what you hope to achieve with Ayurveda</small>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check-circle me-2"></i>Save Changes
+                    </button>
+                    <a href="{% url 'profile' %}" class="btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Additional Info -->
+    <div class="info-section">
+        <div class="info-card">
+            <div class="info-icon">
+                <i class="bi bi-info-circle"></i>
+            </div>
+            <div class="info-content">
+                <h3 class="info-title">Why Update Your Profile?</h3>
+                <ul class="info-list">
+                    <li>Get more personalized Ayurvedic recommendations</li>
+                    <li>Track your wellness journey progress</li>
+                    <li>Receive tailored meal plans based on your goals</li>
+                    <li>Improve dosha assessment accuracy</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Edit Profile Styles */
+    .edit-profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Header */
+    .edit-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .header-text {
+        flex: 1;
+    }
+
+    .header-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Form Section */
+    .edit-form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 2rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .form-subtitle {
+        color: #64748b;
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .edit-form {
+        padding: 2rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-control {
+        padding: 0.875rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        background-color: white;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        outline: none;
+    }
+
+    .form-control[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    .form-control[type="number"]::-webkit-outer-spin-button,
+    .form-control[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .error-message {
+        margin-top: 0.5rem;
+        color: #dc2626;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .form-help {
+        margin-top: 0.5rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-style: italic;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.875rem 2rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-save:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.875rem 2rem;
+        background: #f3f4f6;
+        color: #374151;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        border: 1px solid #d1d5db;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    /* Info Section */
+    .info-section {
+        margin-top: 2rem;
+    }
+
+    .info-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 1px solid #bae6fd;
+        border-radius: 1rem;
+        padding: 2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .info-icon {
+        font-size: 2rem;
+        color: #0369a1;
+        flex-shrink: 0;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 1rem 0;
+    }
+
+    .info-list {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .info-list li {
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .info-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .edit-profile-container {
+            padding: 1rem;
+        }
+
+        .edit-header {
+            padding: 1.5rem;
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 1.75rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .edit-form {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+            gap: 0.75rem;
+        }
+
+        .btn-save, .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .info-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .edit-header {
+            padding: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+        }
+
+        .form-header {
+            padding: 1.5rem;
+        }
+
+        .edit-form {
+            padding: 1rem;
+        }
+
+        .info-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

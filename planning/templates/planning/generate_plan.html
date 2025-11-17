@@ -1,0 +1,868 @@
+{% extends 'base.html' %}
+
+{% block title %}Generate Meal Plan - AyurMe{% endblock %}
+
+{% block content %}
+    <div class="generate-container">
+        <!-- Header Section -->
+        <div class="generate-header">
+            <div class="header-background">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop&crop=center" alt="Ayurvedic meal preparation" class="header-bg-img">
+            </div>
+            <div class="header-overlay">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="bi bi-magic"></i>
+                    </div>
+                    <div class="header-text">
+                        <h1 class="generate-title">Generate Your Meal Plan</h1>
+                        <p class="generate-subtitle">Personalized Ayurvedic Nutrition</p>
+                    </div>
+                </div>
+                <div class="header-description">
+                    <p>Based on your dosha assessment and food preferences, we'll create a customized meal plan just for you.</p>
+                </div>
+            </div>
+        </div>
+
+        {% if error %}
+            <!-- Error Section -->
+            <div class="error-section">
+                <div class="error-card">
+                    <div class="error-icon">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <h3 class="error-title">Assessment Required</h3>
+                    <p class="error-message">{{ error }}</p>
+                    <a href="{% url redirect_url %}" class="error-btn">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Complete Assessment
+                    </a>
+                </div>
+            </div>
+        {% elif success %}
+            <!-- Success Section -->
+            <div class="success-section">
+                <div class="success-card">
+                    <div class="success-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h3 class="success-title">Meal Plan Generated Successfully!</h3>
+                    <p class="success-message">Your personalized meal plan for today has been created based on your <strong>{{ dosha }}</strong> dosha.</p>
+
+                    <!-- Generated Meals Display -->
+                    <div class="generated-meals">
+                        {% for meal_group in generated_meals %}
+                            <div class="meal-group">
+                                <h4 class="meal-group-title">
+                                    <i class="bi bi-clock me-2"></i>
+                                    {{ meal_group.meal_type }}
+                                </h4>
+                                <div class="meal-options">
+                                    {% for recipe in meal_group.recipes %}
+                                        <div class="meal-option">
+                                            {% if recipe.image %}
+                                                <div class="meal-image-container">
+                                                    {% if 'http' in recipe.image %}
+                                                        <img src="{{ recipe.image }}" alt="{{ recipe.name }}" class="meal-image" data-bs-toggle="modal" data-bs-target="#recipeModal{{ recipe.id }}" style="cursor: pointer;">
+                                                    {% else %}
+                                                        <img src="/media/recipes/{{ recipe.image }}" alt="{{ recipe.name }}" class="meal-image" data-bs-toggle="modal" data-bs-target="#recipeModal{{ recipe.id }}" style="cursor: pointer;">
+                                                    {% endif %}
+                                                </div>
+                                            {% else %}
+                                                <div class="meal-image-placeholder" data-bs-toggle="modal" data-bs-target="#recipeModal{{ recipe.id }}" style="cursor: pointer;">
+                                                    <i class="bi bi-image"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div class="meal-content">
+                                                <div class="meal-header">
+                                                    <h5 class="meal-name">{{ recipe.name }}</h5>
+                                                    <span class="meal-type-badge">{{ recipe.food_type }}</span>
+                                                </div>
+                                                <p class="meal-description">{{ recipe.recipe_text|truncatechars:100 }}</p>
+                                                {% if recipe.specific_conditions %}
+                                                    <div class="meal-benefits">
+                                                        <i class="bi bi-star-fill me-1"></i>
+                                                        <small>{{ recipe.specific_conditions }}</small>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Recipe Modal -->
+                                        <div class="modal fade" id="recipeModal{{ recipe.id }}" tabindex="-1" aria-labelledby="recipeModalLabel{{ recipe.id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                <div class="modal-content recipe-modal-content">
+                                                    <div class="modal-header recipe-modal-header">
+                                                        <h5 class="modal-title recipe-modal-title" id="recipeModalLabel{{ recipe.id }}">
+                                                            <i class="bi bi-utensils me-2"></i>{{ recipe.name }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body recipe-modal-body">
+                                                        <div class="recipe-modal-image-section">
+                                                            {% if recipe.image %}
+                                                                {% if 'http' in recipe.image %}
+                                                                    <img src="{{ recipe.image }}" alt="{{ recipe.name }}" class="recipe-modal-image">
+                                                                {% else %}
+                                                                    <img src="/media/recipes/{{ recipe.image }}" alt="{{ recipe.name }}" class="recipe-modal-image">
+                                                                {% endif %}
+                                                            {% else %}
+                                                                <div class="recipe-modal-image-placeholder">
+                                                                    <i class="bi bi-image"></i>
+                                                                    <p>No Image Available</p>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="recipe-modal-details">
+                                                            <div class="recipe-modal-meta">
+                                                                <span class="recipe-modal-badge">{{ recipe.food_type }}</span>
+                                                                {% if recipe.specific_conditions %}
+                                                                    <div class="recipe-modal-benefits">
+                                                                        <i class="bi bi-star-fill me-1"></i>
+                                                                        <span>{{ recipe.specific_conditions }}</span>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="recipe-modal-description">
+                                                                <h6 class="recipe-modal-subtitle">Recipe Details</h6>
+                                                                <p class="recipe-modal-text">{{ recipe.recipe_text }}</p>
+                                                            </div>
+                                                            {% if recipe.ingredients %}
+                                                                <div class="recipe-modal-ingredients">
+                                                                    <h6 class="recipe-modal-subtitle">Key Ingredients</h6>
+                                                                    <p class="recipe-modal-text">{{ recipe.ingredients }}</p>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer recipe-modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                            <i class="bi bi-x-circle me-1"></i>Close
+                                                        </button>
+                                                        <button type="button" class="btn btn-primary">
+                                                            <i class="bi bi-heart me-1"></i>Add to Favorites
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <p class="no-recipes">No suitable recipes found for {{ meal_group.meal_type|lower }}. Please update your preferences.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{% url 'view_plan' %}" class="primary-btn">
+                            <i class="bi bi-eye me-2"></i>
+                            View Full Plan
+                        </a>
+                        <a href="{% url 'nutrition:recipes_list' %}" class="secondary-btn">
+                            <i class="bi bi-book me-2"></i>
+                            Browse All Recipes
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="secondary-btn">
+                            <i class="bi bi-house me-2"></i>
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Loading Section -->
+            <div class="loading-section">
+                <div class="loading-card">
+                    <div class="loading-icon">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <h3 class="loading-title">Generating Your Plan</h3>
+                    <p class="loading-message">Analyzing your dosha and preferences to create the perfect meal recommendations...</p>
+                    <div class="loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <style>
+        /* Modern Generate Plan Styles */
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --secondary-color: #f8fafc;
+            --accent-color: #10b981;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+        }
+
+        .generate-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Header Section */
+        .generate-header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 3rem;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .header-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .header-bg-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.4);
+        }
+
+        .header-overlay {
+            position: relative;
+            z-index: 2;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(16, 185, 129, 0.1));
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: var(--shadow-xl);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        .generate-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .generate-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .header-description {
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* Error Section */
+        .error-section {
+            margin-top: 3rem;
+        }
+
+        .error-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 3rem 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 1rem 0;
+        }
+
+        .error-message {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            line-height: 1.6;
+            margin: 0 0 2rem 0;
+        }
+
+        .error-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 1.125rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .error-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+            background: linear-gradient(135deg, #d97706, #b45309);
+        }
+
+        /* Success Section */
+        .success-section {
+            margin-top: 3rem;
+        }
+
+        .success-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 3rem 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-color), #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin: 0 0 1rem 0;
+        }
+
+        .success-message {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            line-height: 1.6;
+            text-align: center;
+            margin: 0 0 2rem 0;
+        }
+
+        /* Generated Meals */
+        .generated-meals {
+            margin-bottom: 3rem;
+        }
+
+        .meal-group {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--secondary-color);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .meal-group-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .meal-options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .meal-option {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .meal-image-container {
+            flex-shrink: 0;
+            width: 120px;
+            height: 120px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .meal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .meal-image:hover {
+            transform: scale(1.05);
+        }
+
+        .meal-image-placeholder {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--secondary-color), var(--border-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 2rem;
+            border-radius: var(--radius-lg);
+            border: 2px dashed var(--border-color);
+        }
+
+        .meal-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .meal-option:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .meal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .meal-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .meal-type-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meal-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .meal-benefits {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .no-recipes {
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            padding: 1rem;
+            margin: 0;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .primary-btn, .secondary-btn {
+            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 1.125rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md);
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--primary-dark), #3730a3);
+        }
+
+        .secondary-btn {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .secondary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        /* Loading Section */
+        .loading-section {
+            margin-top: 3rem;
+        }
+
+        .loading-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 3rem 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .loading-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-xl);
+            animation: spin 2s linear infinite;
+        }
+
+        .loading-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 1rem 0;
+        }
+
+        .loading-message {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            line-height: 1.6;
+            margin: 0 0 2rem 0;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Recipe Modal Styles */
+        .recipe-modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: none;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .recipe-modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 1.5rem 2rem;
+            border: none;
+        }
+
+        .recipe-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .recipe-modal-body {
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .recipe-modal-image-section {
+            flex-shrink: 0;
+            width: 300px;
+            height: 300px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .recipe-modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .recipe-modal-image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--secondary-color), var(--border-color));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 3rem;
+            border: 2px dashed var(--border-color);
+        }
+
+        .recipe-modal-image-placeholder p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .recipe-modal-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .recipe-modal-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .recipe-modal-badge {
+            background: linear-gradient(135deg, var(--accent-color), #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recipe-modal-benefits {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .recipe-modal-subtitle {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 0.75rem 0;
+        }
+
+        .recipe-modal-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .recipe-modal-footer {
+            background: var(--secondary-color);
+            padding: 1.5rem 2rem;
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .recipe-modal-footer .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .recipe-modal-footer .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .recipe-modal-footer .btn-secondary:hover {
+            background: var(--text-primary);
+            color: white;
+            border-color: var(--text-primary);
+        }
+
+        .recipe-modal-footer .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+        }
+
+        .recipe-modal-footer .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #3730a3);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .generate-container {
+                padding: 1rem;
+            }
+
+            .generate-title {
+                font-size: 2.5rem;
+            }
+
+            .header-overlay {
+                padding: 3rem 1.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-text {
+                text-align: center;
+            }
+
+            .success-card, .error-card, .loading-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .meal-group {
+                padding: 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .primary-btn, .secondary-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .generate-title {
+                font-size: 2rem;
+            }
+
+            .header-overlay {
+                padding: 2rem 1rem;
+            }
+
+            .success-title {
+                font-size: 1.5rem;
+            }
+
+            .meal-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}

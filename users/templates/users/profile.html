@@ -1,0 +1,646 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Profile - AyurMe{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Header Section -->
+    <div class="profile-header">
+        <div class="profile-header-content">
+            <div class="profile-avatar">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="profile-info">
+                <h1 class="profile-name">{{ user.username }}'s Profile</h1>
+                <p class="profile-role">Ayurvedic Wellness Patient</p>
+                {% if profile.dominant_dosha %}
+                    <div class="dosha-badge dosha-{{ profile.dominant_dosha|lower }}">
+                        <i class="bi bi-star-fill me-2"></i>
+                        Dominant Dosha: {{ profile.dominant_dosha }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="profile-actions">
+                <a href="{% url 'edit_profile' %}" class="btn-edit-profile">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Sections -->
+    <div class="profile-sections">
+        <!-- Personal Information -->
+        <div class="profile-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="bi bi-person-lines-fill me-2"></i>Personal Information
+                </h2>
+            </div>
+            <div class="section-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label class="info-label">Full Name</label>
+                        <p class="info-value">{{ user.get_full_name|default:user.username }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">Email</label>
+                        <p class="info-value">{{ user.email }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">Age</label>
+                        <p class="info-value">{{ profile.age|default:"Not specified" }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">Gender</label>
+                        <p class="info-value">{{ profile.get_gender_display|default:"Not specified" }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">Location</label>
+                        <p class="info-value">{{ profile.location|default:"Not specified" }}</p>
+                    </div>
+                    <div class="info-item full-width">
+                        <label class="info-label">Health Goals</label>
+                        <p class="info-value">{{ profile.health_goals|default:"Not specified" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questionnaire Responses -->
+        {% if responses %}
+        <div class="profile-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="bi bi-clipboard-check me-2"></i>Dosha Assessment Results
+                </h2>
+            </div>
+            <div class="section-content">
+                <div class="responses-list">
+                    {% for response in responses %}
+                    <div class="response-item">
+                        <div class="response-question">
+                            <strong>{{ response.question.question_text }}</strong>
+                        </div>
+                        <div class="response-details">
+                            <span class="response-dosha dosha-{{ response.question.dosha|lower }}">
+                                {{ response.question.dosha }}
+                            </span>
+                            <span class="response-score">Score: {{ response.answer }}/5</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Food Preferences -->
+        {% if preferences %}
+        <div class="profile-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="bi bi-heart me-2"></i>Food Preferences
+                </h2>
+            </div>
+            <div class="section-content">
+                <div class="preferences-grid">
+                    {% for pref in preferences %}
+                    <div class="preference-item preference-{{ pref.preference_type|lower }}">
+                        <div class="preference-icon">
+                            {% if pref.preference_type == 'Allergy' %}
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            {% elif pref.preference_type == 'Favorite' %}
+                                <i class="bi bi-heart-fill"></i>
+                            {% else %}
+                                <i class="bi bi-dash-circle-fill"></i>
+                            {% endif %}
+                        </div>
+                        <div class="preference-content">
+                            <h4 class="preference-food">{{ pref.food_name }}</h4>
+                            <span class="preference-type">{{ pref.preference_type }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Meal Plans -->
+        {% if meal_plans_by_date %}
+        <div class="profile-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="bi bi-calendar-check me-2"></i>Meal Plans
+                </h2>
+            </div>
+            <div class="section-content">
+                {% for date_key, day_plan in meal_plans_by_date.items %}
+                <div class="meal-plan-day">
+                    <h3 class="day-date">
+                        <i class="bi bi-calendar-day me-2"></i>
+                        {{ day_plan.date|date:"l, F j, Y" }}
+                    </h3>
+                    <div class="meals-grid">
+                        {% for meal in day_plan.meals %}
+                        <div class="meal-item meal-{{ meal.meal_type|lower }}">
+                            <div class="meal-header">
+                                <h4 class="meal-type">{{ meal.get_meal_type_display }}</h4>
+                                <span class="meal-time">
+                                    {% if meal.meal_type == 'Breakfast' %}8:00 AM
+                                    {% elif meal.meal_type == 'Lunch' %}12:00 PM
+                                    {% else %}6:00 PM{% endif %}
+                                </span>
+                            </div>
+                            <div class="meal-recipe">
+                                <h5 class="recipe-name">{{ meal.recipe.name }}</h5>
+                                <p class="recipe-description">{{ meal.recipe.description|truncatechars:100 }}</p>
+                                {% if meal.recipe.dosha_benefits %}
+                                <div class="recipe-benefits">
+                                    <small>Benefits: {{ meal.recipe.dosha_benefits }}</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Empty States -->
+        {% if not responses and not preferences and not meal_plans_by_date %}
+        <div class="profile-section">
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+                <h3 class="empty-title">No Data Available</h3>
+                <p class="empty-description">
+                    Start building your Ayurvedic profile by taking the dosha questionnaire and setting your food preferences.
+                </p>
+                <div class="empty-actions">
+                    <a href="{% url 'questionnaire' %}" class="btn-primary">Take Questionnaire</a>
+                    <a href="{% url 'preferences' %}" class="btn-secondary">Set Preferences</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    /* Profile Styles */
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Header Section */
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+
+    .profile-header-content {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        backdrop-filter: blur(10px);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .profile-role {
+        font-size: 1.125rem;
+        opacity: 0.9;
+        margin: 0 0 1rem 0;
+    }
+
+    .dosha-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .dosha-vata { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
+    .dosha-pitta { background: linear-gradient(135deg, #f44336, #d32f2f); color: white; }
+    .dosha-kapha { background: linear-gradient(135deg, #2196f3, #1976d2); color: white; }
+
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-edit-profile {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit-profile:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Profile Sections */
+    .profile-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .profile-section {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-content {
+        padding: 2rem;
+    }
+
+    /* Personal Information */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: #1e293b;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    /* Questionnaire Responses */
+    .responses-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .response-item {
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .response-question {
+        margin-bottom: 1rem;
+        color: #1e293b;
+    }
+
+    .response-details {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .response-dosha {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .response-score {
+        font-weight: 600;
+        color: #64748b;
+    }
+
+    /* Food Preferences */
+    .preferences-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .preference-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .preference-allergy {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+
+    .preference-favorite {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+
+    .preference-dislike {
+        background: #fef3c7;
+        border-color: #fde68a;
+    }
+
+    .preference-icon {
+        font-size: 1.5rem;
+        color: #64748b;
+    }
+
+    .preference-allergy .preference-icon { color: #dc2626; }
+    .preference-favorite .preference-icon { color: #dc2626; }
+    .preference-dislike .preference-icon { color: #d97706; }
+
+    .preference-content h4 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .preference-type {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Meal Plans */
+    .meal-plan-day {
+        margin-bottom: 2rem;
+    }
+
+    .meal-plan-day:last-child {
+        margin-bottom: 0;
+    }
+
+    .day-date {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 1.5rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .meals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .meal-item {
+        background: #f8fafc;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .meal-breakfast { border-left: 4px solid #fbbf24; }
+    .meal-lunch { border-left: 4px solid #10b981; }
+    .meal-dinner { border-left: 4px solid #6366f1; }
+
+    .meal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .meal-type {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .meal-time {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .recipe-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .recipe-description {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin: 0 0 1rem 0;
+    }
+
+    .recipe-benefits {
+        color: #059669;
+        font-weight: 500;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 1rem 0;
+    }
+
+    .empty-description {
+        font-size: 1rem;
+        margin: 0 0 2rem 0;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .empty-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary, .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #6366f1;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 1rem;
+        }
+
+        .profile-header {
+            padding: 1.5rem;
+        }
+
+        .profile-header-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+
+        .profile-name {
+            font-size: 2rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .preferences-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .meals-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-content {
+            padding: 1.5rem;
+        }
+
+        .empty-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .profile-header {
+            padding: 1rem;
+        }
+
+        .profile-name {
+            font-size: 1.75rem;
+        }
+
+        .section-header {
+            padding: 1rem 1.5rem;
+        }
+
+        .section-content {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}

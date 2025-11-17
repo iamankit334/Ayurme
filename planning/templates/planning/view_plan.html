@@ -1,0 +1,651 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Meal Plan - AyurMe{% endblock %}
+
+{% block content %}
+    <div class="plan-container">
+        <!-- Header Section -->
+        <div class="plan-header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="header-text">
+                    <h1 class="plan-title">Your Meal Plan</h1>
+                    <p class="plan-subtitle">Today's Personalized Nutrition</p>
+                </div>
+            </div>
+            <div class="header-description">
+                <p>Based on your dominant <strong>{{ user.patientprofile.dominant_dosha }}</strong> dosha and food preferences, here are your recommended meals for today.</p>
+            </div>
+        </div>
+
+        {% if plans %}
+            <!-- Meal Plan Display -->
+            <div class="meal-plan-grid">
+                {% for plan in plans %}
+                    <div class="meal-card meal-{{ plan.meal_type|lower }}">
+                        <div class="meal-header">
+                            <div class="meal-icon">
+                                {% if plan.meal_type == 'Breakfast' %}
+                                    <i class="bi bi-sunrise"></i>
+                                {% elif plan.meal_type == 'Lunch' %}
+                                    <i class="bi bi-sun"></i>
+                                {% else %}
+                                    <i class="bi bi-moon-stars"></i>
+                                {% endif %}
+                            </div>
+                            <div class="meal-info">
+                                <h2 class="meal-type">{{ plan.meal_type }}</h2>
+                                <div class="meal-time">
+                                    {% if plan.meal_type == 'Breakfast' %}
+                                        7:00 AM - 9:00 AM
+                                    {% elif plan.meal_type == 'Lunch' %}
+                                        12:00 PM - 2:00 PM
+                                    {% else %}
+                                        6:00 PM - 8:00 PM
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="recipe-content">
+                            <div class="recipe-header">
+                                <h3 class="recipe-name">{{ plan.recipe.name }}</h3>
+                                <span class="food-type-badge">{{ plan.recipe.food_type }}</span>
+                            </div>
+
+                            <div class="recipe-details">
+                                <div class="recipe-text">
+                                    <h4>Recipe:</h4>
+                                    <p>{{ plan.recipe.recipe_text }}</p>
+                                </div>
+
+                                {% if plan.recipe.specific_conditions %}
+                                    <div class="recipe-benefits">
+                                        <div class="benefits-icon">
+                                            <i class="bi bi-star-fill"></i>
+                                        </div>
+                                        <div class="benefits-content">
+                                            <h4>Ayurvedic Benefits:</h4>
+                                            <p>{{ plan.recipe.specific_conditions }}</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="plan-actions">
+                <a href="{% url 'generate_plan' %}" class="action-btn primary">
+                    <i class="bi bi-arrow-repeat me-2"></i>
+                    Generate New Plan
+                </a>
+                <a href="{% url 'dashboard' %}" class="action-btn secondary">
+                    <i class="bi bi-house me-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        {% else %}
+            <!-- No Plan Section -->
+            <div class="no-plan-section">
+                <div class="no-plan-card">
+                    <div class="no-plan-icon">
+                        <i class="bi bi-calendar-x"></i>
+                    </div>
+                    <h3 class="no-plan-title">No Meal Plan Found</h3>
+                    <p class="no-plan-message">You haven't generated a meal plan for today yet. Let's create one tailored to your dosha and preferences!</p>
+                    <a href="{% url 'generate_plan' %}" class="generate-btn">
+                        <i class="bi bi-magic me-2"></i>
+                        Generate Meal Plan
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Nutrition Tips -->
+        <div class="nutrition-tips">
+            <h3 class="tips-title">
+                <i class="bi bi-lightbulb me-2"></i>
+                Ayurvedic Eating Tips
+            </h3>
+            <div class="tips-grid">
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h4>Eat Mindfully</h4>
+                    <p>Eat in a calm environment, chew thoroughly, and avoid distractions like TV or phones.</p>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-thermometer-half"></i>
+                    </div>
+                    <h4>Temperature Balance</h4>
+                    <p>Enjoy foods at comfortable temperatures - neither too hot nor too cold.</p>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-droplet"></i>
+                    </div>
+                    <h4>Stay Hydrated</h4>
+                    <p>Drink warm water throughout the day to support digestion and detoxification.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Modern Meal Plan Styles */
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --secondary-color: #f8fafc;
+            --accent-color: #10b981;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+        }
+
+        .plan-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Header Section */
+        .plan-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: var(--shadow-xl);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        .plan-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .plan-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .header-description {
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .header-description strong {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Meal Plan Grid */
+        .meal-plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .meal-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .meal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .meal-breakfast {
+            border-top: 4px solid #f59e0b;
+        }
+
+        .meal-lunch {
+            border-top: 4px solid #10b981;
+        }
+
+        .meal-dinner {
+            border-top: 4px solid #6366f1;
+        }
+
+        .meal-header {
+            background: var(--secondary-color);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .meal-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .meal-breakfast .meal-icon {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .meal-lunch .meal-icon {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .meal-dinner .meal-icon {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+        }
+
+        .meal-info {
+            flex: 1;
+        }
+
+        .meal-type {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 0.25rem 0;
+        }
+
+        .meal-time {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .recipe-content {
+            padding: 1.5rem;
+        }
+
+        .recipe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .recipe-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            flex: 1;
+        }
+
+        .food-type-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 1rem;
+            flex-shrink: 0;
+        }
+
+        .recipe-details {
+            space-y: 1rem;
+        }
+
+        .recipe-text h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .recipe-text p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .recipe-benefits {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .benefits-icon {
+            color: var(--accent-color);
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+        }
+
+        .benefits-content h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.25rem 0;
+        }
+
+        .benefits-content p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Action Buttons */
+        .plan-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 1.125rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--primary-dark), #3730a3);
+        }
+
+        .action-btn.secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .action-btn.secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        /* No Plan Section */
+        .no-plan-section {
+            margin-top: 3rem;
+        }
+
+        .no-plan-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 3rem 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .no-plan-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--text-muted), var(--text-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .no-plan-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 1rem 0;
+        }
+
+        .no-plan-message {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            line-height: 1.6;
+            margin: 0 0 2rem 0;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 1.125rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+            background: linear-gradient(135deg, var(--primary-dark), #3730a3);
+        }
+
+        /* Nutrition Tips */
+        .nutrition-tips {
+            margin-top: 3rem;
+        }
+
+        .tips-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tip-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .tip-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tip-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-color), #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+
+        .tip-card h4 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .tip-card p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .plan-container {
+                padding: 1rem;
+            }
+
+            .plan-title {
+                font-size: 2.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-text {
+                text-align: center;
+            }
+
+            .meal-plan-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .meal-card {
+                max-width: 100%;
+            }
+
+            .recipe-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+
+            .food-type-badge {
+                margin-left: 0;
+                align-self: flex-start;
+            }
+
+            .plan-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .plan-title {
+                font-size: 2rem;
+            }
+
+            .meal-header {
+                padding: 1rem;
+            }
+
+            .recipe-content {
+                padding: 1rem;
+            }
+
+            .no-plan-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
